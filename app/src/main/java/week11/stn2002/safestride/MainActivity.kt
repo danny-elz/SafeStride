@@ -15,6 +15,7 @@ import week11.stn2002.safestride.navigation.Screen
 import week11.stn2002.safestride.ui.theme.SafeStrideTheme
 import week11.stn2002.safestride.ui.viewmodel.AlertViewModel
 import week11.stn2002.safestride.ui.viewmodel.AuthViewModel
+import week11.stn2002.safestride.ui.viewmodel.SafeWalkViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,17 +30,16 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val authViewModel: AuthViewModel = viewModel()
                     val alertViewModel: AlertViewModel = viewModel()
+                    val safeWalkViewModel: SafeWalkViewModel = viewModel()
 
-                    val startDestination = if (authViewModel.isUserLoggedIn) {
-                        Screen.Dashboard.route
-                    } else {
-                        Screen.Login.route
-                    }
+                    // Always start with splash screen
+                    val startDestination = Screen.Splash.route
 
                     NavGraph(
                         navController = navController,
                         authViewModel = authViewModel,
                         alertViewModel = alertViewModel,
+                        safeWalkViewModel = safeWalkViewModel,
                         startDestination = startDestination
                     )
                 }

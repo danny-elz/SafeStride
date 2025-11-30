@@ -1,7 +1,7 @@
 package week11.stn2002.safestride.data.repository
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -14,30 +14,15 @@ class AlertRepository {
 
     suspend fun createAlert(alert: SOSAlert): Resource<String> {
         return try {
+            Log.d("AlertRepository", "Creating alert: isAutomatic=${alert.isAutomatic}, lat=${alert.latitude}, lng=${alert.longitude}")
             val docRef = firestore.collection("alerts")
                 .add(alert)
                 .await()
+            Log.d("AlertRepository", "Alert saved to Firestore: ${docRef.id}")
             Resource.Success(docRef.id)
         } catch (e: Exception) {
+            Log.e("AlertRepository", "Failed to create alert: ${e.message}")
             Resource.Error(e.message ?: "Failed to create alert")
-        }
-    }
-
-    suspend fun getUserAlerts(userId: String): Resource<List<SOSAlert>> {
-        return try {
-            val snapshot = firestore.collection("alerts")
-                .whereEqualTo("userId", userId)
-                .get()
-                .await()
-
-            val alerts = snapshot.documents.mapNotNull { doc ->
-                doc.toObject(SOSAlert::class.java)?.copy(id = doc.id)
-            }
-            // Sort in app instead of using Firestore orderBy (which requires an index)
-            val sortedAlerts = alerts.sortedByDescending { it.timestamp }
-            Resource.Success(sortedAlerts)
-        } catch (e: Exception) {
-            Resource.Error(e.message ?: "Failed to load alerts")
         }
     }
 

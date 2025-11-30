@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import week11.stn2002.safestride.data.model.User
 import week11.stn2002.safestride.data.repository.AuthRepository
 import week11.stn2002.safestride.util.Resource
 
@@ -21,6 +22,9 @@ class AuthViewModel(
 
     private val _resetPasswordState = MutableStateFlow<Resource<Unit>?>(null)
     val resetPasswordState: StateFlow<Resource<Unit>?> = _resetPasswordState.asStateFlow()
+
+    private val _userProfile = MutableStateFlow<Resource<User>?>(null)
+    val userProfile: StateFlow<Resource<User>?> = _userProfile.asStateFlow()
 
     val isUserLoggedIn: Boolean get() = repository.currentUser != null
 
@@ -70,5 +74,13 @@ class AuthViewModel(
 
     fun resetResetPasswordState() {
         _resetPasswordState.value = null
+    }
+
+    fun loadUserProfile() {
+        val uid = repository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            _userProfile.value = Resource.Loading()
+            _userProfile.value = repository.getUserProfile(uid)
+        }
     }
 }

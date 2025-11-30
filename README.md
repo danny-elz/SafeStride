@@ -183,4 +183,3 @@ The Firestore security rules ensure:
 - Users can only read/write their own data
 - No public writes allowed
 - Field-level validation for data integrity
-
