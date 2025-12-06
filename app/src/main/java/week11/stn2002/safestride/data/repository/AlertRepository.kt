@@ -27,13 +27,18 @@ class AlertRepository {
     }
 
     fun getUserAlertsFlow(userId: String): Flow<Resource<List<SOSAlert>>> = callbackFlow {
+        Log.d("AlertRepository", "Setting up alerts listener for userId: $userId")
+
         val listener = firestore.collection("alerts")
             .whereEqualTo("userId", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    // If index error, return empty list instead of error
+                    Log.e("AlertRepository", "Firestore error: ${error.message}", error)
+                    // If index error or permission error, return empty list
                     if (error.message?.contains("index") == true ||
-                        error.message?.contains("FAILED_PRECONDITION") == true) {
+                        error.message?.contains("FAILED_PRECONDITION") == true ||
+                        error.message?.contains("PERMISSION_DENIED") == true) {
+                        Log.w("AlertRepository", "Permission or index issue, returning empty list")
                         trySend(Resource.Success(emptyList()))
                     } else {
                         trySend(Resource.Error(error.message ?: "Failed to load alerts"))
@@ -42,6 +47,7 @@ class AlertRepository {
                 }
 
                 if (snapshot != null) {
+                    Log.d("AlertRepository", "Received ${snapshot.documents.size} alerts")
                     val alerts = snapshot.documents.mapNotNull { doc ->
                         doc.toObject(SOSAlert::class.java)?.copy(id = doc.id)
                     }

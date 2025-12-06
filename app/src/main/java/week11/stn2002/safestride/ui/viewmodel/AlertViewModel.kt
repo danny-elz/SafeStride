@@ -27,17 +27,23 @@ class AlertViewModel(
     }
 
     fun loadAlerts() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = currentUser?.uid
+        Log.d("AlertViewModel", "loadAlerts called - userId: $userId, isAuthenticated: ${currentUser != null}")
+
         if (userId == null) {
+            Log.w("AlertViewModel", "No authenticated user, returning empty alerts")
             _alerts.value = Resource.Success(emptyList())
             return
         }
         viewModelScope.launch {
             try {
                 repository.getUserAlertsFlow(userId).collect { result ->
+                    Log.d("AlertViewModel", "Alerts result: $result")
                     _alerts.value = result
                 }
             } catch (e: Exception) {
+                Log.e("AlertViewModel", "Error loading alerts: ${e.message}", e)
                 _alerts.value = Resource.Error(e.message ?: "Failed to load alerts")
             }
         }

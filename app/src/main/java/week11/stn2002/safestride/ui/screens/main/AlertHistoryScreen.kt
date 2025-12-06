@@ -28,6 +28,11 @@ fun AlertHistoryScreen(
 ) {
     val alertsState by alertViewModel.alerts.collectAsState()
 
+    // Refresh alerts when screen is displayed
+    LaunchedEffect(Unit) {
+        alertViewModel.loadAlerts()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
